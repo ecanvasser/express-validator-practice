@@ -22,10 +22,7 @@ const validateUser = [
     .isLength({ min: 1, max: 10 })
     .withMessage(`Last name ${lengthErr}`),
   body("email").trim().isEmail().withMessage(`Email ${emailErr}`),
-  body("age")
-    .trim()
-    .isInt({ min: 18, max: 120 })
-    .withMessage(`Age ${ageErr}`),
+  body("age").trim().isInt({ min: 18, max: 120 }).withMessage(`Age ${ageErr}`),
   body("bio").trim().isAlpha().withMessage(`Bio ${alphaErr}`),
 ];
 
@@ -91,4 +88,13 @@ exports.usersUpdatePost = [
 exports.usersDeletePost = (req, res) => {
   usersStorage.deleteUser(req.params.id);
   res.redirect("/");
+};
+
+exports.userSearchPost = (req, res) => {
+  const query = req.body.query;
+  const matches = usersStorage.searchUsers(query);
+  if (matches.length > 0) {
+    return res.render("search", { matches: matches });
+  }
+  res.render("index", { title: "User list", errors: [{msg: "No matching users"}] });
 };
