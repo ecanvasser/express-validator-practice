@@ -4,6 +4,9 @@ const { body, validationResult } = require("express-validator");
 
 const alphaErr = "must only contain letters.";
 const lengthErr = "must be between 1 and 10 characters.";
+const emailErr = "must be a valid email";
+const ageErr = "must only contain numbers";
+const ageLengthErr = "must be between 0 and 99";
 
 const validateUser = [
   body("firstName")
@@ -18,6 +21,14 @@ const validateUser = [
     .withMessage(`Last name ${alphaErr}`)
     .isLength({ min: 1, max: 10 })
     .withMessage(`Last name ${lengthErr}`),
+  body("email").trim().isEmail().withMessage(`Email ${emailErr}`),
+  body("age")
+    .trim()
+    .isNumeric({ min: 18, max: 120 })
+    .withMessage(`Age ${ageErr}`)
+    .isLength({ min: 2, max: 3 })
+    .withMessage(`Age ${ageLengthErr}`),
+  body("bio").trim().isAlpha().withMessage(`Bio ${alphaErr}`),
 ];
 
 exports.usersListGet = (req, res) => {
@@ -33,12 +44,6 @@ exports.usersCreateGet = (req, res) => {
   });
 };
 
-exports.usersCreatePost = (req, res) => {
-  const { firstName, lastName } = req.body;
-  usersStorage.addUser({ firstName, lastName });
-  res.redirect("/");
-};
-
 // We can pass an entire array of middleware validations to our controller.
 exports.usersCreatePost = [
   validateUser,
@@ -50,8 +55,8 @@ exports.usersCreatePost = [
         errors: errors.array(),
       });
     }
-    const { firstName, lastName } = req.body;
-    usersStorage.addUser({ firstName, lastName });
+    const { firstName, lastName, email, age, bio } = req.body;
+    usersStorage.addUser({ firstName, lastName, email, age, bio });
     res.redirect("/");
   },
 ];
@@ -67,13 +72,11 @@ exports.usersUpdatePost = [
     const user = usersStorage.getUser(req.params.id);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .render("updateUser", {
-          title: "Update user",
-          user: user,
-          errors: errors.array(),
-        });
+      return res.status(400).render("updateUser", {
+        title: "Update user",
+        user: user,
+        errors: errors.array(),
+      });
     }
     const { firstName, lastName } = req.body;
     usersStorage.updateUser(req.params.id, { firstName, lastName });
