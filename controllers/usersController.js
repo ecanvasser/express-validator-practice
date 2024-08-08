@@ -24,10 +24,8 @@ const validateUser = [
   body("email").trim().isEmail().withMessage(`Email ${emailErr}`),
   body("age")
     .trim()
-    .isNumeric({ min: 18, max: 120 })
-    .withMessage(`Age ${ageErr}`)
-    .isLength({ min: 2, max: 3 })
-    .withMessage(`Age ${ageLengthErr}`),
+    .isInt({ min: 18, max: 120 })
+    .withMessage(`Age ${ageErr}`),
   body("bio").trim().isAlpha().withMessage(`Bio ${alphaErr}`),
 ];
 
@@ -78,8 +76,14 @@ exports.usersUpdatePost = [
         errors: errors.array(),
       });
     }
-    const { firstName, lastName } = req.body;
-    usersStorage.updateUser(req.params.id, { firstName, lastName });
+    const { firstName, lastName, email, age, bio } = req.body;
+    usersStorage.updateUser(req.params.id, {
+      firstName,
+      lastName,
+      email,
+      age,
+      bio,
+    });
     res.redirect("/");
   },
 ];
